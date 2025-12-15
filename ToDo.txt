@@ -1,0 +1,72 @@
+To-Do List: D’Elegance Gift Shop
+
+Stack
+- Frontend: Next.js (App Router) + Tailwind CSS + TypeScript
+- Database/Auth: Supabase (Postgres + Auth/RLS)
+- Schema: Prisma
+- Media Storage/CDN: Cloudinary (images + video, deletions supported)
+
+1) Planning and assets
+- Finalize categories + collections (6–10 each) and initial seasonal set.
+- Define product content rules: # images per product, video usage (max length/size).
+- Gather brand assets: logo, favicon, product photos, lifestyle photos, copy (About/FAQ/Policies).
+
+2) Repo and environments
+- Create/push GitHub repo.
+- Add .env.local (and document required env vars in README.md).
+- Create Vercel project connected to repo (preview deploys on push).
+
+3) Supabase setup
+ Create Supabase project.
+ Configure Auth (admin-only access for your sister).
+ Enable Row Level Security (RLS) + policies for admin tables.
+ Create DB schema:
+ - Products (title, slug, price, salePrice, description, stock, active)
+ - Categories
+ - Collections
+ - Media (Cloudinary URLs + type + order)
+ - Variants + personalization fields
+ - Seed initial categories/collections/products.
+
+4) Cloudinary setup
+ Create Cloudinary account + folder structure (e.g., delegance/products/{productId}).
+ Decide upload approach:
+ - Signed uploads via server route (recommended)
+ 
+ Implement media operations:
+ - Upload image/video → store URL + public_id in Supabase
+ - Delete media (Cloudinary delete) when catalogs update
+ - Reorder gallery images per product
+ - Add limits: allowed formats, max size, max files per product.
+
+5) Admin dashboard (hands-off for you)
+ Build /admin with authentication + role protection.
+ CRUD:
+ - Products create/edit/delete + active toggle
+ - Inventory stock adjustments
+ - Categories and collections management
+ - Media manager per product (upload/delete/reorder)
+ - Add “preview product page” link.
+
+6) Storefront pages (mobile-first, fully responsive)
+- Home: hero + featured collections + seasonal banner + best sellers + under $25
+- Shop: grid + search + filters + sorting
+- Product detail: gallery + variants + personalization + stock status
+- Cart: local cart + summary
+- About, Contact, FAQ, Policies
+
+7) Ordering now (WhatsApp) + checkout later
+- Implement WhatsApp Order (Option 2 cart summary).
+- Enforce delivery rule: delivery only if subtotal ≥ $25.
+- Capture pickup/delivery selection + customer name + notes.
+
+8) Branding and UX polish
+- Design system: black + #e7c726 + white (buttons, badges, highlights).
+- Micro-interactions: hover/tap feedback, subtle transitions.
+- Accessibility: contrast, focus, keyboard navigation.
+
+9) QA and launch
+- Test: small phones, large phones, tablets, laptops, large desktop.
+- Performance: optimize images, lazy-load galleries.
+- SEO: metadata, OpenGraph, sitemap, clean slugs.
+- Production deploy on Vercel + connect domain.
