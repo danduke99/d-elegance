@@ -1,4 +1,4 @@
-To-Do List: D’Elegance Gift Shop
+To-Do List: D’Elegance Gift Shop (Inspo - http://presents-workdo.myshopify.com/)
 
 Stack
 - Frontend: Next.js (App Router) + Tailwind CSS + TypeScript
