@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --text: #111111;
+  --muted: #5b5b5b;
+  --border: #e4e4e7;
+
+  --accent: #efbf05; /* gold */
+  --accent-2: #111111; /* black */
+
+  --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  --font-heading: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+}
+
+::selection {
+  background: rgba(231, 199, 38, 0.35);
+}
+
+/* Nav link with animated top/bottom bars */
+.nav-underline {
+  position: relative;
+  display: inline-block;
+  padding-top: 6px;   /* room for top bar */
+  padding-bottom: 6px; /* room for bottom bar */
+  text-decoration: none;
+}
+
+/* Top bar (black) grows left -> right */
+.nav-underline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 2px;
+  width: 100%;
+  background: #111111;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms ease;
+  border-radius: 999px;
+}
+
+/* Bottom bar (gold) grows right -> left */
+.nav-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: #e7c726;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 220ms ease;
+  border-radius: 999px;
+}
+
+.nav-underline:hover::before,
+.nav-underline:hover::after {
+  transform: scaleX(1);
+}
