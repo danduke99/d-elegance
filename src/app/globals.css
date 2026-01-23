@@ -10,30 +10,61 @@
   --accent: #efbf05; /* gold */
   --accent-2: #111111; /* black */
 
-  --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji",
-    "Segoe UI Emoji";
-  --font-heading: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  /* Injected by next/font in layout.tsx */
+  --font-body: var(--font-body);   /* DM Sans */
+  --font-brand: var(--font-brand); /* Italianno */
+}
+
+/* Utility: gold with 50% opacity (valid CSS) */
+.gold-50 {
+  background-color: rgba(239, 191, 5, 0.5);
+}
+
+/* Base page styling */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  font-family: var(--font-body);
+  font-family: var(--font-body), system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
   background: var(--bg);
   color: var(--text);
 }
 
-h1, h2, h3, h4 {
-  font-family: var(--font-heading);
+/* Headings remain clean/readable in DM Sans */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-body), system-ui, -apple-system, Segoe UI, Roboto, Arial;
 }
 
+/* Italianno brand font (use only for logo/wordmark/hero accents) */
+.brand-font {
+  font-family: var(--font-brand), cursive;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Optional: use on larger hero headlines */
+.brand-heading {
+  font-family: var(--font-brand), cursive;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* Selection color (matches your gold) */
 ::selection {
-  background: rgba(231, 199, 38, 0.35);
+  background: rgba(239, 191, 5, 0.35);
 }
 
 /* Nav link with animated top/bottom bars */
 .nav-underline {
   position: relative;
   display: inline-block;
-  padding-top: 6px;   /* room for top bar */
+  padding-top: 6px; /* room for top bar */
   padding-bottom: 6px; /* room for bottom bar */
   text-decoration: none;
 }
@@ -44,9 +75,9 @@ h1, h2, h3, h4 {
   position: absolute;
   left: 0;
   top: 0;
-  height: 2px;
+  height: 3px;
   width: 100%;
-  background: #111111;
+  background: var(--accent-2);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 220ms ease;
@@ -59,9 +90,9 @@ h1, h2, h3, h4 {
   position: absolute;
   left: 0;
   bottom: 0;
-  height: 2px;
+  height: 3px;
   width: 100%;
-  background: #e7c726;
+  background: var(--accent);
   transform: scaleX(0);
   transform-origin: right;
   transition: transform 220ms ease;
@@ -71,4 +102,12 @@ h1, h2, h3, h4 {
 .nav-underline:hover::before,
 .nav-underline:hover::after {
   transform: scaleX(1);
+}
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .nav-underline::before,
+  .nav-underline::after {
+    transition: none;
+  }
 }

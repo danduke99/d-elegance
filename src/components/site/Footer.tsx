@@ -40,7 +40,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-zinc-200 py-6 text-center text-xs text-zinc-500">
+        <div className="brand-font border-t border-zinc-200 py-6 text-center text-xl text-zinc-500">
           © {new Date().getFullYear()} D’Elegance
         </div>
       </Container>

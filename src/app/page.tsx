@@ -65,7 +65,7 @@ export default function HomePage() {
           <section className="py-10">
             <h2 className="text-xl font-semibold">Best sellers</h2>
             <div className="mt-4">
-              <ProductGrid />
+              <ProductGrid products={[]} />
             </div>
           </section>
         </Container>

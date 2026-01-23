@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { DM_Sans, Italianno } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "../lib/cart/cartStore";
 
-const inter = Italianno({
+const italianno = Italianno({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-brand",
@@ -11,7 +12,7 @@ const inter = Italianno({
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-body",
   display: "swap",
 });
 
@@ -23,8 +24,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${dmSans.variable} antialiased`}>
-        {children}
+      <body className={`${italianno.variable} ${dmSans.variable} antialiased`}>
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );
