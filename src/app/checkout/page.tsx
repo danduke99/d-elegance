@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useCart } from "../../lib/cart/cartStore";
 import { formatXCG } from "../../lib/money";
-import { CheckoutSuccessButton } from "@/src/components/ui/CheckoutSuccessButton"
-
-type DeliveryMethod = "pickup" | "delivery";
+import { loadCheckoutDraft, saveCheckoutDraft } from "../../lib/checkout/checkoutStore";
+import type { DeliveryMethod } from "../../lib/checkout/checkoutStore";
+import { CheckoutSuccessButton } from "../../components/ui/CheckoutSuccessButton";
 
 export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
@@ -20,6 +20,20 @@ export default function CheckoutPage() {
   const whatsappNumber =
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "17215241234";
   const sentooLink = process.env.NEXT_PUBLIC_SENTOO_PAYMENT_LINK ?? "";
+
+  // Load draft once
+  useEffect(() => {
+    const draft = loadCheckoutDraft();
+    if (!draft) return;
+    setName(draft.name ?? "");
+    setNotes(draft.notes ?? "");
+    setMethod((draft.method ?? "pickup") as DeliveryMethod);
+  }, []);
+
+  // Autosave draft
+  useEffect(() => {
+    saveCheckoutDraft({ name, notes, method });
+  }, [name, notes, method]);
 
   const cartSummary = useMemo(() => {
     return items
@@ -42,7 +56,7 @@ export default function CheckoutPage() {
         name || "(add name)"
       }\nMethod: ${method}\nSubtotal: ${formatXCG(subtotal)}\n\nItems:\n${cartSummary}\n\nNotes: ${
         notes || "(none)"
-      }`,
+      }`
     );
   }, [name, method, subtotal, cartSummary, notes]);
 
@@ -75,13 +89,9 @@ export default function CheckoutPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      {/* Header row */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-zinc-950">Checkout</h1>
-        <Link
-          href="/cart"
-          className="text-sm text-zinc-600 hover:text-zinc-950"
-        >
+        <Link href="/cart" className="text-sm text-zinc-600 hover:text-zinc-950">
           Back to cart
         </Link>
       </div>
@@ -164,10 +174,7 @@ export default function CheckoutPage() {
 
           <div className="mt-4 space-y-2 text-sm text-zinc-700">
             {items.map((it) => (
-              <div
-                key={it.id}
-                className="flex items-start justify-between gap-3"
-              >
+              <div key={it.id} className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="truncate">
                     {it.title} × {it.qty}
@@ -187,20 +194,20 @@ export default function CheckoutPage() {
             <button
               type="button"
               onClick={onPayWithSentoo}
-              className="inline-flex w-full items-center justify-center rounded-full bg-(--accent) px-5 py-3 text-sm font-semibold text-zinc-950 hover:cursor-pointer hover:brightness-95 active:scale-[0.99]"
+              className="inline-flex w-full items-center justify-center rounded-full bg-(--accent) px-5 py-3 text-sm font-semibold text-zinc-950 hover:brightness-95 active:scale-[0.99] gold-shadow gold-ring"
             >
               Pay with Sentoo
             </button>
 
+            {/* Animated “I’ve paid” button */}
+            <CheckoutSuccessButton />
+
             <a
               href={whatsappHref}
-              className="inline-flex w-full items-center justify-center rounded-full border border-zinc-200 bg-[#3aab35] px-5 py-3 text-sm font-medium text-white hover:bg-[#27a021] active:scale-[0.99]"
+              className="inline-flex w-full items-center justify-center rounded-full bg-(--accent) px-5 py-3 text-sm font-semibold text-zinc-950 hover:brightness-95 active:scale-[0.99] gold-shadow gold-ring"
             >
               Confirm on WhatsApp
             </a>
-
-            {/* After paying, user clicks this to go to the success instructions */}
-            <CheckoutSuccessButton />
 
             <button
               type="button"
@@ -217,9 +224,7 @@ export default function CheckoutPage() {
           {!sentooLink ? (
             <p className="mt-3 text-xs text-red-600">
               Sentoo payment link not configured. Add{" "}
-              <span className="font-medium">
-                NEXT_PUBLIC_SENTOO_PAYMENT_LINK
-              </span>{" "}
+              <span className="font-medium">NEXT_PUBLIC_SENTOO_PAYMENT_LINK</span>{" "}
               to <span className="font-medium">.env.local</span>.
             </p>
           ) : null}

@@ -111,3 +111,13 @@ h4 {
     transition: none;
   }
 }
+
+/* Gold accent helpers (playful premium) */
+.gold-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(231, 199, 38, 0.35);
+}
+
+.gold-shadow {
+  box-shadow: 0 8px 22px rgba(231, 199, 38, 0.18);
+}

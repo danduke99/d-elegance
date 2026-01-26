@@ -2,10 +2,10 @@ export function formatXCG(amount: number | string) {
   const value = Number(amount);
 
   if (Number.isNaN(value)) {
-    return "0.00 XCG";
+    return "XCG 0.00";
   }
 
-  return `${value.toFixed(2)} XCG`;
+  return `XCG ${value.toFixed(2)}`;
 }
 
 export function round2(n: number) {
