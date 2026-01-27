@@ -1,45 +1,22 @@
-import { AnnouncementBar } from "../../components/site/AnnouncementBar";
-import { Header } from "../../components/site/Header";
-import { Footer } from "../../components/site/Footer";
-import { Container } from "../../components/site/Container";
-import { ProductGrid } from "../../components/shop/ProductGrid";
-import { demoCatalog } from "../../lib/catalog/demoCatalog";
+import { AnnouncementBar } from "@/src/components/site/AnnouncementBar";
+import { Header } from "@/src/components/site/Header";
+import { Footer } from "@/src/components/site/Footer";
+import { Container } from "@/src/components/site/Container";
+import { ProductGrid } from "@/src/components/shop/ProductGrid";
+import { ShopControls } from "@/src/components/shop/ShopControls";
+import { getActiveProducts } from "@/src/lib/data/products";
 
-type Props = {
-  searchParams?: { c?: string; q?: string; tag?: string; sort?: string };
-};
+export default async function ShopPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string; sort?: string }>;
+}) {
+  const sp = await searchParams;
 
-function normalize(s: string) {
-  return s.trim().toLowerCase();
-}
+  const category = sp.c ?? null;
+  const sort = (sp.sort ?? "new") as any;
 
-export default function ShopPage({ searchParams }: Props) {
-  const c = searchParams?.c ? normalize(searchParams.c) : "";
-  const q = searchParams?.q ? normalize(searchParams.q) : "";
-  const tag = searchParams?.tag ? normalize(searchParams.tag) : "";
-  const sort = searchParams?.sort ? normalize(searchParams.sort) : ""; // later
-
-  let products = demoCatalog.filter((p) => {
-    const matchCategory = c ? p.category === c : true;
-    const matchQuery = q
-      ? normalize(p.title).includes(q) || normalize(p.slug).includes(q)
-      : true;
-    const matchTag = tag ? (p.tags ?? []).map(normalize).includes(tag) : true;
-
-    return matchCategory && matchQuery && matchTag;
-  });
-
-  // Sorting (basic, safe now)
-  if (sort === "price-asc") products = [...products].sort((a, b) => a.price - b.price);
-  if (sort === "price-desc") products = [...products].sort((a, b) => b.price - a.price);
-
-  const heading = tag
-    ? tag.replaceAll("-", " ")
-    : c
-      ? c.replaceAll("-", " ")
-      : "Shop";
-
-  const title = heading.charAt(0).toUpperCase() + heading.slice(1);
+  const products = await getActiveProducts({ category, sort });
 
   return (
     <>
@@ -50,58 +27,36 @@ export default function ShopPage({ searchParams }: Props) {
         <Container>
           <section className="py-10">
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl">
-              {title}
+              Shop
             </h1>
-
             <p className="mt-2 text-sm text-zinc-600 sm:text-base">
               Browse gifts, accessories, seasonal sets, and more.
             </p>
 
-            {/* Search + quick filters */}
-            <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <form className="flex w-full gap-2 lg:max-w-md" action="/shop" method="get">
-                {/* Preserve filters when searching */}
-                {c ? <input type="hidden" name="c" value={c} /> : null}
-                {tag ? <input type="hidden" name="tag" value={tag} /> : null}
-                {sort ? <input type="hidden" name="sort" value={sort} /> : null}
+            <ShopControls
+              currentCategory={category}
+              currentSort={sp.sort ?? "new"}
+            />
 
-                <input
-                  name="q"
-                  defaultValue={q}
-                  placeholder="Search products..."
-                  className="h-11 w-full rounded-full border border-zinc-200 bg-white px-4 text-sm outline-none focus:ring-2 focus:ring-zinc-300"
-                />
-                <button
-                  type="submit"
-                  className="rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 active:scale-[0.99]"
-                >
-                  Search
-                </button>
-              </form>
+            {/* Results + gold divider */}
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <p className="text-sm text-zinc-600">
+                <span className="font-medium text-zinc-900">
+                  {products.length}
+                </span>{" "}
+                {products.length === 1 ? "item" : "items"}
+                {category ? (
+                  <>
+                    {" "}
+                    in{" "}
+                    <span className="font-medium text-zinc-900">
+                      {category}
+                    </span>
+                  </>
+                ) : null}
+              </p>
 
-              <div className="flex flex-wrap gap-2">
-                <a className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50" href="/shop">
-                  All
-                </a>
-                <a className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50" href="/shop?c=gift-boxes">
-                  Gift Boxes
-                </a>
-                <a className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50" href="/shop?c=seasonal">
-                  Seasonal
-                </a>
-                <a className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50" href="/shop?tag=under-25">
-                  Under 25
-                </a>
-              </div>
-
-              <div className="flex gap-2">
-                <a className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50" href={`/shop?${new URLSearchParams({ ...(c ? { c } : {}), ...(q ? { q } : {}), ...(tag ? { tag } : {}), sort: "price-asc" }).toString()}`}>
-                  Price ↑
-                </a>
-                <a className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50" href={`/shop?${new URLSearchParams({ ...(c ? { c } : {}), ...(q ? { q } : {}), ...(tag ? { tag } : {}), sort: "price-desc" }).toString()}`}>
-                  Price ↓
-                </a>
-              </div>
+              <div className="h-px flex-1 bg-linear-to-r from-transparent via-(--accent) to-transparent opacity-70" />
             </div>
 
             <div className="mt-6">

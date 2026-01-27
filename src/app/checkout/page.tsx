@@ -4,9 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useCart } from "../../lib/cart/cartStore";
 import { formatXCG } from "../../lib/money";
-import { loadCheckoutDraft, saveCheckoutDraft } from "../../lib/checkout/checkoutStore";
+import {
+  loadCheckoutDraft,
+  saveCheckoutDraft,
+} from "../../lib/checkout/checkoutStore";
 import type { DeliveryMethod } from "../../lib/checkout/checkoutStore";
 import { CheckoutSuccessButton } from "../../components/ui/CheckoutSuccessButton";
+import { useAnimatedNumber } from "../../lib/ui/useAnimatedNumber";
 
 export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
@@ -16,6 +20,7 @@ export default function CheckoutPage() {
   const [method, setMethod] = useState<DeliveryMethod>("pickup");
 
   const deliveryAllowed = subtotal >= 25;
+  const animatedSubtotal = useAnimatedNumber(subtotal, { durationMs: 420 });
 
   const whatsappNumber =
     process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "17215241234";
@@ -56,7 +61,7 @@ export default function CheckoutPage() {
         name || "(add name)"
       }\nMethod: ${method}\nSubtotal: ${formatXCG(subtotal)}\n\nItems:\n${cartSummary}\n\nNotes: ${
         notes || "(none)"
-      }`
+      }`,
     );
   }, [name, method, subtotal, cartSummary, notes]);
 
@@ -91,7 +96,10 @@ export default function CheckoutPage() {
     <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-zinc-950">Checkout</h1>
-        <Link href="/cart" className="text-sm text-zinc-600 hover:text-zinc-950">
+        <Link
+          href="/cart"
+          className="text-sm text-zinc-600 hover:text-zinc-950"
+        >
           Back to cart
         </Link>
       </div>
@@ -137,7 +145,7 @@ export default function CheckoutPage() {
               className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
                 method === "pickup"
                   ? "border-zinc-950 bg-zinc-950 text-white"
-                  : "border-zinc-200 bg-white hover:bg-zinc-50"
+                  : "border-zinc-200 bg-white hover:bg-zinc-50 hover:cursor-pointer"
               }`}
             >
               <div className="font-semibold">Pickup</div>
@@ -151,7 +159,7 @@ export default function CheckoutPage() {
               className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
                 method === "delivery"
                   ? "border-zinc-950 bg-zinc-950 text-white"
-                  : "border-zinc-200 bg-white hover:bg-zinc-50"
+                  : "border-zinc-200 bg-white hover:bg-zinc-50 hover:cursor-pointer"
               } ${!deliveryAllowed ? "cursor-not-allowed opacity-50" : ""}`}
             >
               <div className="font-semibold">Delivery</div>
@@ -174,7 +182,10 @@ export default function CheckoutPage() {
 
           <div className="mt-4 space-y-2 text-sm text-zinc-700">
             {items.map((it) => (
-              <div key={it.id} className="flex items-start justify-between gap-3">
+              <div
+                key={it.id}
+                className="flex items-start justify-between gap-3"
+              >
                 <div className="min-w-0">
                   <div className="truncate">
                     {it.title} × {it.qty}
@@ -187,27 +198,27 @@ export default function CheckoutPage() {
 
           <div className="mt-4 flex items-center justify-between border-t border-zinc-200 pt-4 text-base font-semibold">
             <span>Subtotal</span>
-            <span>{formatXCG(subtotal)}</span>
+            <span>{formatXCG(animatedSubtotal)}</span>
           </div>
 
           <div className="mt-5 grid gap-3">
             <button
               type="button"
               onClick={onPayWithSentoo}
-              className="inline-flex w-full items-center justify-center rounded-full bg-(--accent) px-5 py-3 text-sm font-semibold text-zinc-950 hover:brightness-95 active:scale-[0.99] gold-shadow gold-ring"
+              className="inline-flex w-full items-center justify-center rounded-full bg-linear-to-r from-[#01698e] to-[#0ba39c] bg-size-[200%_200%] animate-[gradientShift_6s_ease_infinite] px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:underline hover:cursor-pointer hover:brightness-110 active:scale-[0.99] gold-ring"
             >
               Pay with Sentoo
             </button>
 
-            {/* Animated “I’ve paid” button */}
-            <CheckoutSuccessButton />
-
             <a
               href={whatsappHref}
-              className="inline-flex w-full items-center justify-center rounded-full bg-(--accent) px-5 py-3 text-sm font-semibold text-zinc-950 hover:brightness-95 active:scale-[0.99] gold-shadow gold-ring"
+              className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold text-white hover:underline hover:brightness-95 active:scale-[0.99] bg-[#3baa34]"
             >
               Confirm on WhatsApp
             </a>
+
+            {/* Animated “I’ve paid” button */}
+            <CheckoutSuccessButton />
 
             <button
               type="button"
@@ -215,7 +226,7 @@ export default function CheckoutPage() {
                 clear();
                 window.location.href = "/shop";
               }}
-              className="text-center text-xs text-zinc-500 hover:text-zinc-700"
+              className="text-center text-xs text-zinc-500 hover:text-zinc-700 hover:underline hover:cursor-pointer"
             >
               Clear cart
             </button>
@@ -224,7 +235,9 @@ export default function CheckoutPage() {
           {!sentooLink ? (
             <p className="mt-3 text-xs text-red-600">
               Sentoo payment link not configured. Add{" "}
-              <span className="font-medium">NEXT_PUBLIC_SENTOO_PAYMENT_LINK</span>{" "}
+              <span className="font-medium">
+                NEXT_PUBLIC_SENTOO_PAYMENT_LINK
+              </span>{" "}
               to <span className="font-medium">.env.local</span>.
             </p>
           ) : null}

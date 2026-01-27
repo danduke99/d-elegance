@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCart } from "../../lib/cart/cartStore";
 import { formatXCG } from "../../lib/money";
 import { QtyStepper } from "../../components/cart/QtyStepper";
+import { useAnimatedNumber } from "@/src/lib/ui/useAnimatedNumber";
 
 export default function CartPage() {
   const { items, subtotal, setQty, removeItem, itemCount } = useCart();
@@ -12,6 +13,7 @@ export default function CartPage() {
   const deliveryMin = 25;
   const deliveryAllowed = subtotal >= deliveryMin;
   const remaining = Math.max(0, deliveryMin - subtotal);
+  const animatedSubtotal = useAnimatedNumber(subtotal, { durationMs: 420 });
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -161,7 +163,7 @@ export default function CartPage() {
 
             <div className="mt-2 flex items-center justify-between text-base font-semibold">
               <span>Subtotal</span>
-              <span>{formatXCG(subtotal)}</span>
+              <span>{formatXCG(animatedSubtotal)}</span>
             </div>
 
             <Link

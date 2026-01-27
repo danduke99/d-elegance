@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 type Particle = {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
+  x: number; // CSS px
+  y: number; // CSS px
+  vx: number; // CSS px / frame
+  vy: number; // CSS px / frame
+  r: number; // radius in CSS px
   type: "check" | "dollar";
   color: string;
 };
@@ -16,6 +16,7 @@ type Particle = {
 export function CheckoutSuccessButton() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,77 +25,77 @@ export function CheckoutSuccessButton() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let dpr = window.devicePixelRatio || 1;
-
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    const countPerIcon = 15;
+    // Always simulate in CSS pixels
+    let w = 0; // CSS width
+    let h = 0; // CSS height
+    let dpr = 1;
 
     const GOLD = "#e7c726";
     const BLACK = "#111111";
     const GREEN = "#16a34a";
 
-    const makeParticle = (type: Particle["type"]): Particle => {
-      const isCheck = type === "check";
+    const countPerIcon = 15;
 
-      return {
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 1.4,
-        vy: (Math.random() - 0.5) * 1.4,
-        size: 36,
-        type,
-        color: isCheck
-          ? Math.random() > 0.5
-            ? GOLD
-            : BLACK
-          : GREEN,
-      };
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      w = Math.max(1, rect.width);
+      h = Math.max(1, rect.height);
+
+      dpr = Math.max(1, window.devicePixelRatio || 1);
+
+      // Render surface in device pixels, but we draw in CSS pixels
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Re-seed particles to ensure they are within new bounds
+      seedParticles();
     };
 
-    particlesRef.current = Array.from({ length: countPerIcon * 2 }).map(
-      (_, i) => makeParticle(i % 2 === 0 ? "check" : "dollar")
-    );
+    const seedParticles = () => {
+      const makeParticle = (type: Particle["type"]): Particle => {
+        const isCheck = type === "check";
+        const r = 10; // radius in CSS px (tweak for density)
 
-    const step = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return {
+          x: rand(r, w - r),
+          y: rand(r, h - r),
+          vx: rand(-1, 1) * 1.2,
+          vy: rand(-1, 1) * 1.2,
+          r,
+          type,
+          color: isCheck ? (Math.random() > 0.5 ? GOLD : BLACK) : GREEN,
+        };
+      };
 
-      const ps = particlesRef.current;
+      particlesRef.current = Array.from({ length: countPerIcon * 2 }).map(
+        (_, i) => makeParticle(i % 2 === 0 ? "check" : "dollar"),
+      );
+    };
 
-      // Move + bounce
-      for (const p of ps) {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        const r = p.size;
-
-        if (p.x < r) {
-          p.x = r;
-          p.vx *= -1;
-        }
-        if (p.x > canvas.width / dpr - r) {
-          p.x = canvas.width / dpr - r;
-          p.vx *= -1;
-        }
-        if (p.y < r) {
-          p.y = r;
-          p.vy *= -1;
-        }
-        if (p.y > canvas.height / dpr - r) {
-          p.y = canvas.height / dpr - r;
-          p.vy *= -1;
-        }
+    const bounceWalls = (p: Particle) => {
+      if (p.x - p.r < 0) {
+        p.x = p.r;
+        p.vx *= -1;
+      } else if (p.x + p.r > w) {
+        p.x = w - p.r;
+        p.vx *= -1;
       }
 
-      // Particle collisions
+      if (p.y - p.r < 0) {
+        p.y = p.r;
+        p.vy *= -1;
+      } else if (p.y + p.r > h) {
+        p.y = h - p.r;
+        p.vy *= -1;
+      }
+    };
+
+    const resolveCollisions = () => {
+      const ps = particlesRef.current;
+
       for (let i = 0; i < ps.length; i++) {
         for (let j = i + 1; j < ps.length; j++) {
           const a = ps[i];
@@ -102,21 +103,63 @@ export function CheckoutSuccessButton() {
 
           const dx = b.x - a.x;
           const dy = b.y - a.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const dist2 = dx * dx + dy * dy;
+          const minDist = a.r + b.r;
 
-          if (dist > 0 && dist < a.size) {
+          if (dist2 > 0 && dist2 < minDist * minDist) {
+            const dist = Math.sqrt(dist2);
             const nx = dx / dist;
             const ny = dy / dist;
 
-            a.vx -= nx * 0.15;
-            a.vy -= ny * 0.15;
-            b.vx += nx * 0.15;
-            b.vy += ny * 0.15;
+            // push apart
+            const overlap = minDist - dist;
+            a.x -= nx * (overlap / 2);
+            a.y -= ny * (overlap / 2);
+            b.x += nx * (overlap / 2);
+            b.y += ny * (overlap / 2);
+
+            // basic impulse to look "bouncy"
+            const relVx = b.vx - a.vx;
+            const relVy = b.vy - a.vy;
+            const velAlongNormal = relVx * nx + relVy * ny;
+
+            if (velAlongNormal > 0) continue;
+
+            const restitution = 0.9;
+            const impulse = -(1 + restitution) * velAlongNormal;
+
+            const ix = impulse * nx;
+            const iy = impulse * ny;
+
+            a.vx -= ix * 0.5;
+            a.vy -= iy * 0.5;
+            b.vx += ix * 0.5;
+            b.vy += iy * 0.5;
+
+            bounceWalls(a);
+            bounceWalls(b);
           }
         }
       }
+    };
 
-      // Draw icons
+    const draw = () => {
+      // clear in CSS pixels (because transform scales)
+      ctx.clearRect(0, 0, w, h);
+
+      const ps = particlesRef.current;
+
+      // move + wall bounce
+      for (const p of ps) {
+        p.x += p.vx;
+        p.y += p.vy;
+        bounceWalls(p);
+      }
+
+      // collisions
+      resolveCollisions();
+
+      // draw
       for (const p of ps) {
         ctx.save();
         ctx.translate(p.x, p.y);
@@ -131,13 +174,22 @@ export function CheckoutSuccessButton() {
         ctx.restore();
       }
 
-      requestAnimationFrame(step);
+      rafRef.current = requestAnimationFrame(draw);
     };
 
-    step();
+    resize();
+    window.addEventListener("resize", resize);
+
+    // Use ResizeObserver so it reacts to button width changes too (not only window resize)
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(canvas);
+
+    rafRef.current = requestAnimationFrame(draw);
 
     return () => {
       window.removeEventListener("resize", resize);
+      ro.disconnect();
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
@@ -146,13 +198,12 @@ export function CheckoutSuccessButton() {
       href="/checkout/success"
       className="relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-50 active:scale-[0.99]"
     >
-      {/* Background physics */}
+      {/* Canvas must match button box */}
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0 w-full opacity-40"
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-40"
       />
 
-      {/* Label */}
       <span className="relative z-10 font-semibold">
         I&apos;ve paid (continue)
       </span>

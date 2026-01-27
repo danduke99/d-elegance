@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { Container } from "./Container";
 import Image from "next/image";
-import { useCart } from "../../lib/cart/cartStore";
 import { useEffect, useRef, useState } from "react";
+import { CartButton } from "../../components/cart/CartButton";
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
@@ -29,7 +29,6 @@ function MenuIcon({ open }: { open: boolean }) {
 }
 
 export function Header() {
-  const { itemCount } = useCart();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
@@ -119,19 +118,7 @@ export function Header() {
               Browse
             </Link>
 
-            {/* Cart (all sizes) */}
-            <Link
-              href="/cart"
-              className="relative inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 active:scale-[0.99]"
-              onClick={close}
-            >
-              Cart
-              {itemCount > 0 ? (
-                <span className="ml-2 inline-flex min-w-6 items-center justify-center rounded-full bg-zinc-950 px-2 py-0.5 text-xs font-semibold text-white">
-                  {itemCount}
-                </span>
-              ) : null}
-            </Link>
+            <CartButton className="relative inline-flex items-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 active:scale-[0.99]" />
 
             {/* Mobile menu toggle */}
             <button
@@ -149,9 +136,7 @@ export function Header() {
         {/* Mobile menu panel */}
         <div
           ref={panelRef}
-          className={`md:hidden ${
-            open ? "block" : "hidden"
-          } pb-4`}
+          className={`md:hidden ${open ? "block" : "hidden"} pb-4`}
         >
           <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">
             <div className="grid gap-2">
