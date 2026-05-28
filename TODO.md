@@ -67,6 +67,14 @@
 
 ## Follow-Up TODOs After Admin Section
 
+- [ ] Build an eye-catching hero section that helps clients buy.
+  - Make the first viewport immediately show the D'Elegance brand, gift-shop value, and a strong product/occasion signal.
+  - Use real product photography or high-quality generated imagery; avoid generic decorative gradients or stock-looking visuals.
+  - Include clear primary and secondary calls to action, likely `Shop Gifts` and `View Gift Boxes`.
+  - Highlight trust/conversion cues such as pickup, delivery over 25 XCG, personalization, and curated gift options without overcrowding the hero.
+  - Keep the hero responsive, polished, and fast-loading on mobile.
+  - Ensure a hint of the next section remains visible below the hero on common desktop and mobile viewports.
+
 - [ ] Decide the package manager and clean up lockfiles.
   - Both `package-lock.json` and `pnpm-lock.yaml` are present.
   - Pick npm or pnpm, then remove the unused lockfile in a deliberate cleanup commit.
